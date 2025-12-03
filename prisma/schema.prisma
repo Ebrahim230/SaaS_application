@@ -1,24 +1,86 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider   = "prisma-client-js"
+  output     = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+enum WeekDay {
+  Mon
+  Tue
+  Wed
+  Thu
+  Fri
+  Sat
+  Sun
 }
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User    @relation(fields: [authorId], references: [id])
-  authorId  Int
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  name          String?
+  password      String
+  createdAt     DateTime       @default(now())
+  notifications Notification[]
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Float
+  sold      Int      @default(0)
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Customer {
+  id       Int      @id @default(autoincrement())
+  name     String
+  email    String   @unique
+  joinedAt DateTime @default(now())
+  orders   Order[]
+}
+
+model Order {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId Int?
+  product    Product?  @relation(fields: [productId], references: [id])
+  productId  Int?
+}
+
+model Earnings {
+  id      Int      @id @default(autoincrement())
+  amount  Float
+  date    DateTime @default(now())
+  sales   Sales?   @relation(fields: [salesId], references: [id])
+  salesId Int?
+}
+
+model Visitor {
+  id        Int      @id @default(autoincrement())
+  ip        String
+  visitedAt DateTime @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  message   String
+  time      String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+}
+
+model Sales {
+  id       Int        @id @default(autoincrement())
+  day      WeekDay
+  volume   Int
+  service  Int
+  amount   Float
+  date     DateTime   @default(now())
+  earnings Earnings[]
 }

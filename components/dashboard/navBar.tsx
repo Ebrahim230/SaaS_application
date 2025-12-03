@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Input } from "../ui/input";
@@ -8,6 +8,22 @@ import { redirect } from "next/navigation";
 
 export default function NavBar() {
     const [search, setSearch] = useState("");
+    const [results, setResults] = useState([]);
+    const [notifications, setNotifications] = useState([]);
+    const [showPopup, setShowPopup] = useState(false);
+    useEffect(() => {
+        const fetchSearch = async () => {
+            if (search.trim().length === 0) {
+                setResults([]);
+                return;
+            }
+            const res = await fetch(`/api/dashboard/search?q=${search}`);
+            const data = await res.json();
+            setResults(data.results);
+        };
+        const delay = setTimeout(fetchSearch, 300);
+        return () => clearTimeout(delay);
+    }, [search]);
 
     return (
         <nav className="w-full flex items-center justify-between p-4 bg-[#2C2D33] shadow-md">
@@ -21,7 +37,15 @@ export default function NavBar() {
                 />
             </div>
             <div className="flex items-center gap-4 ml-4 max-w-2/5">
-                <Bell className="w-6 h-6 cursor-pointer text-gray-600 hover:bg-[#A9DFD8] hover:rounded-full hover:p-0.5" />
+                <Bell
+                    className="w-6 h-6 cursor-pointer text-gray-600 hover:bg-[#A9DFD8] hover:rounded-full hover:p-0.5"
+                    onClick={async () => {
+                        const res = await fetch("/api/dashboard/notifications");
+                        const data = await res.json();
+                        setNotifications(data.notifications);
+                        setShowPopup(!showPopup);
+                    }}
+                />
                 <Avatar className="w-10 h-10 cursor-pointer">
                     <AvatarImage src="/profile.avif" alt="Profile" onClick={() => { redirect('/profile') }} />
                     <AvatarFallback className="text-[#87888C]" onClick={() => { redirect('/profile') }}>EA</AvatarFallback>

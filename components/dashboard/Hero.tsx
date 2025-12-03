@@ -1,15 +1,30 @@
 'use client'
+import { useState, useEffect } from "react"
 import { BarChart, Bar, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 export default function Hero() {
-    const data = [
-        { name: 'Mon', Volume: 120, Service: 80 },
-        { name: 'Tue', Volume: 200, Service: 160 },
-        { name: 'Wed', Volume: 150, Service: 120 },
-        { name: 'Thu', Volume: 80, Service: 60 },
-        { name: 'Fri', Volume: 100, Service: 90 },
-        { name: 'Sat', Volume: 130, Service: 70 },
-    ]
+    const [chartData, setChartData] = useState([])
+    const [summary, setSummary] = useState({
+        totalSales: 0,
+        totalOrders: 0,
+        productsSold: 0,
+        newCustomers: 0,
+    })
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await fetch('/api/dashboard/hero')
+                const json = await res.json()
+                console.log(json);
+                setChartData(json.chart)
+                setSummary(json.summary)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        fetchData()
+    }, [])
 
     const CustomLegend = () => (
         <div className="flex justify-between items-center text-gray-500 mt-2 px-4">
@@ -35,25 +50,25 @@ export default function Hero() {
                 <div className="flex flex-wrap lg:flex-nowrap gap-4 pl-4">
                     <div className="flex flex-col gap-1 w-1/2 sm:w-1/4 p-4 bg-[#1F1F1F] rounded-lg">
                         <img src="/icon1.svg" alt="total sales" className="w-6 h-6 drop-shadow-md" />
-                        <span className="font-inter font-semibold text-[15px] leading-4 text-white">$5k</span>
+                        <span className="font-inter font-semibold text-[15px] leading-4 text-white">${summary.totalSales}</span>
                         <span className="font-inter font-medium text-[10px] text-[#E8E8E8]">Total Sales</span>
                         <span className="font-inter font-medium text-[8px] text-[#FEB95A]">+10% from yesterday</span>
                     </div>
                     <div className="flex flex-col gap-1 w-1/2 sm:w-1/4 p-4 bg-[#1F1F1F] rounded-lg">
                         <img src="/icon2.svg" alt="total orders" className="w-6 h-6 drop-shadow-md" />
-                        <span className="font-inter font-semibold text-[15px] leading-4 text-white">500</span>
+                        <span className="font-inter font-semibold text-[15px] leading-4 text-white">{summary.totalOrders}</span>
                         <span className="font-inter font-medium text-[10px] text-[#E8E8E8]">Total Order</span>
                         <span className="font-inter font-medium text-[8px] text-[#A9DFD8]">+8% from yesterday</span>
                     </div>
                     <div className="flex flex-col gap-1 w-1/2 sm:w-1/4 p-4 bg-[#1F1F1F] rounded-lg">
                         <img src="/icon3.svg" alt="product sold" className="w-6 h-6 drop-shadow-md" />
-                        <span className="font-inter font-semibold text-[15px] leading-4 text-white">9</span>
+                        <span className="font-inter font-semibold text-[15px] leading-4 text-white">{summary.productsSold}</span>
                         <span className="font-inter font-medium text-[10px] text-[#E8E8E8]">Product Sold</span>
                         <span className="font-inter font-medium text-[8px] text-[#F2C8ED]">+2% from yesterday</span>
                     </div>
                     <div className="flex flex-col gap-1 w-1/2 sm:w-1/4 p-4 bg-[#1F1F1F] rounded-lg">
                         <img src="/icon4.svg" alt="new customer" className="w-6 h-6 drop-shadow-md" />
-                        <span className="font-inter font-semibold text-[15px] leading-4 text-white">12</span>
+                        <span className="font-inter font-semibold text-[15px] leading-4 text-white">{summary.newCustomers}</span>
                         <span className="font-inter font-medium text-[10px] text-[#E8E8E8]">New Customer</span>
                         <span className="font-inter font-medium text-[8px] text-[#20AEF3]">+3% from yesterday</span>
                     </div>
@@ -65,11 +80,8 @@ export default function Hero() {
                 </div>
                 <div className="w-full rounded-lg">
                     <ResponsiveContainer width="100%" height={160}>
-                        <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barCategoryGap="40%">
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#2C2C2C', borderRadius: 6, border: 'none' }}
-                                itemStyle={{ color: '#A9DFD8' }}
-                            />
+                        <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} barCategoryGap="40%">
+                            <Tooltip contentStyle={{ backgroundColor: '#2C2C2C', borderRadius: 6, border: 'none' }} itemStyle={{ color: '#A9DFD8' }} />
                             <Legend verticalAlign="bottom" content={<CustomLegend />} />
                             <Bar dataKey="Volume" stackId="a" fill="#A9DFD8" radius={[0, 0, 0, 0]} barSize={12} />
                             <Bar dataKey="Service" stackId="a" fill="#87888C" radius={[4, 4, 0, 0]} barSize={12} />
